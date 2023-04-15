@@ -6,25 +6,20 @@ namespace DiseaseSimulation
         public Form1()
         {
             InitializeComponent();
-            DrawPerson();
-        }
-        
-        private void DrawPerson()
-        {
-
         }
 
         private void UpdatePictureBox(object sender, PaintEventArgs e)
         {
             Graphics pic = e.Graphics;
-            
-            for (int i = 0; i < 10; i++)
+
+            for (int i = 0; i < simulation.N; i++)
             {
-                int[] cor = simulation.Persons[i].getPosition();
+                int[] XY = simulation.Persons[i].getPosition();
                 string cond = simulation.Persons[i].getCondition();
                 SolidBrush color = CheckColor(cond);
-                Rectangle rect = new Rectangle(cor[0]*5, cor[1]*5, 16, 16);
+                Rectangle rect = new Rectangle(XY[0]*5, XY[1]*5, 16, 16);
                 pic.FillEllipse(color, rect);
+                
             }
         }
         private SolidBrush CheckColor(string condition)
@@ -50,5 +45,52 @@ namespace DiseaseSimulation
                 return green;
             }
         }
+        private void UpdateUITextLabel()
+        {
+            simulation.CountTurns++;
+            CountTurnLabel.Text = simulation.CountTurns.ToString();
+            GreenPersonsText.Text = simulation.GreenPersons.ToString();
+            YellowPersonsText.Text = simulation.YellowPersons.ToString();
+            OrangePersonsText.Text = simulation.OrangePersons.ToString();
+            RedPersonsText.Text = simulation.RedPersons.ToString();
+            CountsPersons.Text = simulation.N.ToString();
+        }
+
+        private void SimulationTimer(object sender, EventArgs e)
+        {
+            simulation.TurnSession();
+            UpdateUITextLabel();  
+            PictureBoxGrid.Invalidate();
+        }
+
+        private void StartSimulation(object sender, EventArgs e)
+        {
+            PictureBoxGrid.Visible = true;
+            SimulationTimerClock.Start();
+            StopButton.Enabled = true;
+            StartButton.Enabled = false;
+        }
+        private void StopButton_Click(object sender, EventArgs e)
+        {
+            StartButton.Enabled = true;
+            StopButton.Enabled = false;
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void CountsPersons_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void CountPersonsText_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
     }
 }
