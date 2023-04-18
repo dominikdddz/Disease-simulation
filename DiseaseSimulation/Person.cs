@@ -8,7 +8,7 @@ namespace DiseaseSimulation
 {
     internal class Person
     {
-        private int[] position; // położenie - [x,y] od [0-100
+        private int[] position; // położenie - [x,y] od [0-100]
         private int speed; // predkosc - [1,2,3]
         private int direction; // kierunek ruchu
         //  [7] [8] [9]
@@ -17,7 +17,7 @@ namespace DiseaseSimulation
         private string condition; // stan - chory (C), zarazony (Z), zdrowiejacy (ZD), zdrowy (ZZ)
         public int durationCondition;
         private int age; // wiek - [0-100]
-        private int resistance; // odpornosc na chorobe - [0,10] niska: (0, 3> , srednia: (3, 6 > , wysoka(6, 10 >
+        private double resistance; // odpornosc na chorobe [0,10] -> niska: (0, 3> ; srednia: (3, 6 > ; wysoka: (6, 10 >
         public bool isMeet;
 
 
@@ -43,7 +43,7 @@ namespace DiseaseSimulation
             int a = randomNumber.Next(1, 60+1);
             setAge(a);
 
-            setResistance(a);
+            setNewResistance();
 
             isMeet = false;
         }
@@ -103,26 +103,31 @@ namespace DiseaseSimulation
         {
             return age;
         }
-        public void setResistance(int a)
+        public string checkResistance()
+        {
+            if ((age >= 0 && age < 15) || (age >= 70 && age <= 100)) // niska odpornosc,    wiek < 0, 15) U < 70, 100 >
+                return "low";
+            else if (age >= 40 && age < 70) // srednia odpornosc,   wiek < 40, 70)
+                return "medium";
+            else                            // wysoka odpornosc,    wiek < 15, 40)
+                return "high";
+        }
+        public void setNewResistance()
         {
             Random randomNumber = new Random();
-            if ((a >= 0 && a < 15) || (a >= 70 && a <= 100)) // niska odpornosc,    wiek < 0, 15) U < 70, 100 >
-            {  
-                int r = randomNumber.Next(1, 3+1);
-                resistance = r;
-            }
-            else if (a >= 40 && a < 70) // srednia odpornosc,   wiek < 40, 70)
-            {
-                int r = randomNumber.Next(3, 6+1);
-                resistance = r;
-            }
-            else if (a <= 15 && a < 40) // wysoka odpornosc,    wiek < 15, 40)
-            {
-                int r = randomNumber.Next(6, 10+1);
-                resistance = r;
-            }
+            string resistanceType = checkResistance();
+            if (resistanceType ==  "low")
+                resistance = randomNumber.Next(1, 3 + 1);
+            else if (resistanceType == "medium") 
+                resistance = randomNumber.Next(3, 6 + 1);
+            else 
+                resistance = randomNumber.Next(6, 10 + 1);
         }
-        public int getResistance()
+        public void setResistance(double resistance)
+        {
+            this.resistance = resistance;
+        }
+        public double getResistance()
         {
             return resistance;
         }

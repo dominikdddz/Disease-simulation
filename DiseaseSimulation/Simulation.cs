@@ -9,7 +9,7 @@ namespace DiseaseSimulation
     internal class Simulation
     {
         public Person[] Persons;
-        public int N = 100;
+        public int N = 10;
         public int CountTurns;
 
         public int GreenPersons;
@@ -22,7 +22,6 @@ namespace DiseaseSimulation
 
         public Simulation()
         {
-            CountTurns = 1;
             Persons = new Person[N];
             for(int i = 0; i < N; i++)
             {
@@ -30,15 +29,18 @@ namespace DiseaseSimulation
                 Persons[i] = p;
                 WhichCondition(i);
             }
+            CountTurns = 1;
         }
         public void TurnSession()
         {
             CountTurns++;
             for (int i = 0; i < N; i++)
             {
-                movePerson(i);
-                DurationCondition(i);
+                DurationCondition(Persons[i]);
+                movePerson(Persons[i]);
+                IsMeetSomeone(Persons[i]);
                 gettingOlder(i);
+                clearMeeting();
             }
         }
         private void WhichCondition(int i)
@@ -53,50 +55,121 @@ namespace DiseaseSimulation
             else
                 GreenPersons++;
         }
-        private void DurationCondition(int i)
+        private void DurationCondition(Person person)
         {
-            Persons[i].durationCondition++;
-            string condition = Persons[i].getCondition();
-            int duration = Persons[i].durationCondition;
+            person.durationCondition++;
+            string condition = person.getCondition();
+            int duration = person.durationCondition;
             if(condition=="Z" && duration >= 2)
             {
-                Persons[i].setCondition(1);
-                Persons[i].durationCondition = 1;
+                person.setCondition(1);
+                person.durationCondition = 1;
                 YellowPersons--;
                 RedPersons++;            
             }
             else if (condition == "C" && duration >= 7)
             {
-                Persons[i].setCondition(3);
-                Persons[i].durationCondition = 1;
+                person.setCondition(3);
+                person.durationCondition = 1;
                 RedPersons--;
                 OrangePersons++;
             }
             else if (condition == "ZD" && duration >= 5)
             {
-                Persons[i].setCondition(4);
-                Persons[i].durationCondition = 1;
+                person.setCondition(4);
+                person.durationCondition = 1;
                 OrangePersons--;
                 GreenPersons++;
             }
         }
-        private void IsMeetSomeone(int i)
-        {
-            int[] iXY = Persons[i].getPosition();
-            int max, maxj, maxX, maxY;
-            for(int j = 0; j < N; j++)
-            {
-                if (Persons[i] != Persons[j] && Persons[i].isMeet==false && Persons[j].isMeet==false)
-                {
-                    int[] jXY = Persons[j].getPosition();
-                    maxX = Math.Abs(iXY[0] - jXY[0]);
-                    maxY = Math.Abs(iXY[1] - jXY[1]);
-                    if(maxX < 2 && maxY < 2)
-                    {
 
+        private void clearMeeting()
+        {
+            foreach(Person person in Persons)
+            {
+                person.isMeet = false;
+            }
+        }
+
+        private void checkCondition(Person personOne, Person personTwo)
+        {
+            personOne.isMeet = true;
+            personTwo.isMeet = true;
+            string conditionPersonOne = personOne.getCondition();
+            string conditionPersonTwo = personTwo.getCondition();
+            if(conditionPersonOne == "ZZ" &&  conditionPersonTwo == "Z"){
+                personOne.setCondition(1);
+                personTwo.setCondition(1);
+            }
+            NewDirection(personOne);
+            NewDirection(personTwo);
+        }
+
+        private void resistanceCondition()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                string condition = Persons[i].getCondition();
+                double resistance = Persons[i].getResistance();
+                if (condition == "Z")
+                {
+                    resistance -= 0.1;
+                    if (resistance < 0)
+                        deadPerson(i);
+                    else
+                        Persons[i].setResistance(resistance);
+                }
+                else if (condition == "C")
+                {
+                    resistance -= 0.5;
+                    if (resistance < 0)
+                        deadPerson(i);
+                    else
+                        Persons[i].setResistance(resistance);
+                }
+                else if (condition == "ZD")
+                {
+                    resistance += 0.1;
+                }
+                else
+                {
+                    resistance += 0.05;
+                }
+            }
+        }
+
+        private void IsMeetSomeone(Person person)
+        {
+            if (person.isMeet != true) {
+                Person closestPerson = FindClosestPerson(person);
+                if (closestPerson != null) {
+                    checkCondition(person, closestPerson);
+                }
+            }
+        }
+
+        private Person FindClosestPerson(Person person)
+        {
+            int[] iXY = person.getPosition();
+            double minDistance = double.MaxValue;
+            double maxX, maxY;
+            Person closestPerson = null;
+            foreach (Person someone in Persons)
+            {
+                if (person != someone && someone.isMeet == false)
+                {
+                    int[] jXY = someone.getPosition();
+                    maxX = jXY[0] - iXY[0];
+                    maxY = jXY[1] - iXY[1];
+                    double distance = Math.Sqrt(maxX * maxX + maxY * maxY);
+                    if (distance < minDistance && distance <= 2)
+                    {
+                        minDistance = distance;
+                        closestPerson = someone;
                     }
                 }
             }
+            return closestPerson;
         }
         private void gettingOlder(int i)
         {
@@ -110,13 +183,12 @@ namespace DiseaseSimulation
             else
             {
                 if(age==0 || age == 70)
-                    Persons[i].setCondition(Persons[i].getAge());
+                    Persons[i].setResistance(Persons[i].getAge());
                 else if(age==40)
-                    Persons[i].setCondition(Persons[i].getAge());
+                    Persons[i].setResistance(Persons[i].getAge());
                 else if(age==15)
-                    Persons[i].setCondition(Persons[i].getAge());
+                    Persons[i].setResistance(Persons[i].getAge());
             }
-
         }
         private void deadPerson(int i)
         {
@@ -137,23 +209,23 @@ namespace DiseaseSimulation
             DeadPersons++;
             Array.Resize(ref Persons, Persons.Length - 1);
         }
-        private void movePerson(int i)
+        private void movePerson(Person person)
         {
-            int[] XY = Persons[i].getPosition();
-            int direction = Persons[i].getDirection();
-            int speed = Persons[i].getSpeed();
+            int[] XY = person.getPosition();
+            int direction = person.getDirection();
+            int speed = person.getSpeed();
 
             if (direction == 1)
             {
                 if (XY[0] - speed < 0) 
                 { 
                     XY[0] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else if (XY[1] - speed < 0) 
                 { 
                     XY[1] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 { 
@@ -166,7 +238,7 @@ namespace DiseaseSimulation
                 if (XY[1] - speed < 0)
                 {
                     XY[1] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -178,12 +250,12 @@ namespace DiseaseSimulation
                 if (XY[0] + speed > 100) 
                 {
                     XY[0] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else if (XY[1] - speed < 0) 
                 {
                     XY[1] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -196,7 +268,7 @@ namespace DiseaseSimulation
                 if (XY[0] - speed < 0)
                 {
                     XY[0] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -205,14 +277,14 @@ namespace DiseaseSimulation
             }
             else if (direction == 5)
             {
-                NewDirection(i, direction);
+                NewDirection(person);
             }
             else if (direction == 6)
             {
                 if (XY[0] + speed > 100)
                 {
                     XY[0] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -225,13 +297,13 @@ namespace DiseaseSimulation
                 if (XY[0] - speed < 0)
                 {
                     XY[0] = 0;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                         
                 else if (XY[1] + speed > 100)
                 {
                     XY[1] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -245,7 +317,7 @@ namespace DiseaseSimulation
                 if (XY[1] + speed > 100)
                 {
                     XY[1] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -258,13 +330,13 @@ namespace DiseaseSimulation
                 if (XY[0] + speed > 100)
                 {
                     XY[0] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                        
                 else if (XY[1] + speed > 100)
                 {
                     XY[1] = 100;
-                    NewDirection(i, direction);
+                    NewDirection(person);
                 }
                 else
                 {
@@ -272,13 +344,13 @@ namespace DiseaseSimulation
                     XY[1] = XY[1] + speed;
                 }
             }
-            Persons[i].setPosition(XY[0], XY[1]);
+            person.setPosition(XY[0], XY[1]);
         }
-        private void NewDirection(int i, int d)
+        private void NewDirection(Person person)
         {
             Random randomNumber = new Random();
-            int newD = newD = randomNumber.Next(1, 10);
-            Persons[i].setDirection(newD);
+            int newD = randomNumber.Next(1, 10);
+            person.setDirection(newD);
         }
     }
 

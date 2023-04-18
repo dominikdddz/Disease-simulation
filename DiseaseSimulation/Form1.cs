@@ -17,9 +17,9 @@ namespace DiseaseSimulation
                 int[] XY = simulation.Persons[i].getPosition();
                 string cond = simulation.Persons[i].getCondition();
                 SolidBrush color = CheckColor(cond);
-                Rectangle rect = new Rectangle(XY[0]*5, XY[1]*5, 16, 16);
+                Rectangle rect = new Rectangle(XY[0] * 5, XY[1] * 5, 16, 16);
                 pic.FillEllipse(color, rect);
-                
+
             }
         }
         private SolidBrush CheckColor(string condition)
@@ -59,7 +59,7 @@ namespace DiseaseSimulation
         private void SimulationTimer(object sender, EventArgs e)
         {
             simulation.TurnSession();
-            UpdateUITextLabel();  
+            UpdateUITextLabel();
             PictureBoxGrid.Invalidate();
         }
 
