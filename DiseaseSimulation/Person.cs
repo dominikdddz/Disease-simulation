@@ -38,7 +38,6 @@ namespace DiseaseSimulation
 
             int c = randomNumber.Next(1, 4+1);
             setCondition(c);
-            durationCondition = 1;
 
             int a = randomNumber.Next(1, 60+1);
             setAge(a);
@@ -74,21 +73,25 @@ namespace DiseaseSimulation
         }
         public void setCondition(int c)
         {
-            if (c == 1)
+            if (c == 1) // Chory
             {
                 condition = "C";
+                durationCondition = 1;
             }
-            else if (c == 2)
+            else if (c == 2) // Zarazony
             {
                 condition = "Z";
+                durationCondition = 1;
             }
-            else if (c == 3)
+            else if (c == 3) // Zdrowiejacy
             {
                 condition = "ZD";
+                durationCondition = 1;
             }
-            else
+            else // Zdrowy
             {
                 condition = "ZZ";
+                durationCondition = 1;
             }
         }
         public string getCondition()

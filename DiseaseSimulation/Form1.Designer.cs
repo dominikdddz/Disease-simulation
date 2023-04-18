@@ -230,6 +230,7 @@
             label1.AutoSize = true;
             label1.Location = new Point(5, 17);
             label1.Name = "label1";
+            label1.RightToLeft = RightToLeft.No;
             label1.Size = new Size(95, 15);
             label1.TabIndex = 0;
             label1.Text = "Ilość osobników:";
