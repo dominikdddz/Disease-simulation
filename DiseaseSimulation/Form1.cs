@@ -7,19 +7,17 @@ namespace DiseaseSimulation
         {
             InitializeComponent();
         }
-
         private void UpdatePictureBox(object sender, PaintEventArgs e)
         {
             Graphics pic = e.Graphics;
 
             for (int i = 0; i < simulation.N; i++)
             {
-                int[] XY = simulation.Persons[i].getPosition();
-                string cond = simulation.Persons[i].getCondition();
+                int[] XY = simulation.Persons[i].GetCurrentPosition();
+                string cond = simulation.Persons[i].GetDiseaseCondition();
                 SolidBrush color = CheckColor(cond);
                 Rectangle rect = new Rectangle(XY[0] * 5, XY[1] * 5, 8, 8);
                 pic.FillEllipse(color, rect);
-
             }
         }
         private SolidBrush CheckColor(string condition)
@@ -47,32 +45,51 @@ namespace DiseaseSimulation
         }
         private void UpdateUITextLabel()
         {
-            CountTurnLabel.Text = simulation.CountTurns.ToString();
-            GreenPersonsText.Text = simulation.GreenPersons.ToString();
-            YellowPersonsText.Text = simulation.YellowPersons.ToString();
-            OrangePersonsText.Text = simulation.OrangePersons.ToString();
-            RedPersonsText.Text = simulation.RedPersons.ToString();
+            CountTurnLabel.Text = simulation.turnCount.ToString();
+            GreenPersonsText.Text = simulation.greenPersonsCount.ToString();
+            YellowPersonsText.Text = simulation.yellowPersonsCount.ToString();
+            OrangePersonsText.Text = simulation.orangePersonsCount.ToString();
+            RedPersonsText.Text = simulation.redPersonsCount.ToString();
+            DeadPersonsCount.Text = simulation.deadPersonsCount.ToString();
+            deadPersonCountByAge.Text = simulation.deadCountByAge.ToString();
+            deadPersonCounByDisease.Text = simulation.deadCountByDisease.ToString();
+            BornPersonsCount.Text = simulation.birthPersonsCount.ToString();
             CountsPersons.Text = simulation.N.ToString();
         }
 
-        private void SimulationTimer(object sender, EventArgs e)
+        private void StopSimulation()
         {
-            UpdateUITextLabel();
+            if (simulation.deadPersonsCount == simulation.N || simulation.greenPersonsCount == simulation.N)
+            {
+                SimulationTimerClock.Stop();
+                StopButton.Enabled = false;
+                StartButton.Enabled = false;
+            }
+        }
+
+        private void ExportSimulationDataToCsvFile()  { }
+        private void ImporCsvFileDataToSimulation() { }
+
+        private void SimulationTimerTurn(object sender, EventArgs e)
+        {
             simulation.TurnSession();
+            UpdateUITextLabel();
+            StopSimulation();
             PictureBoxGrid.Invalidate();
         }
 
-        private void StartSimulation(object sender, EventArgs e)
+        private void StartSimulationButton(object sender, EventArgs e)
         {
             PictureBoxGrid.Visible = true;
             SimulationTimerClock.Start();
             StopButton.Enabled = true;
             StartButton.Enabled = false;
         }
-        private void StopButton_Click(object sender, EventArgs e)
+        private void PauseSimulationButton(object sender, EventArgs e)
         {
-            StartButton.Enabled = true;
+            SimulationTimerClock.Stop();
             StopButton.Enabled = false;
+            StartButton.Enabled = true;
         }
 
         private void groupBox1_Enter(object sender, EventArgs e)

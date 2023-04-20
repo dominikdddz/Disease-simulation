@@ -1,138 +1,177 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DiseaseSimulation
+﻿namespace DiseaseSimulation
 {
     internal class Person
     {
-        private int[] position; // położenie - [x,y] od [0-100]
-        private int speed; // predkosc - [1,2,3]
-        private int direction; // kierunek ruchu
+        private int[] _position;    // położenie - [x,y] od [0-100]
+        private int _speed;     // predkosc - [1,2,3]
+        private int _direction;     // kierunek ruchu
         //  [7] [8] [9]
         //  [4] [5] [6]
         //  [1] [2] [3]
-        private string condition; // stan - chory (C), zarazony (Z), zdrowiejacy (ZD), zdrowy (ZZ)
-        public int durationCondition;
-        private int age; // wiek - [0-100]
-        private double resistance; // odpornosc na chorobe [0,10] -> niska: (0, 3> ; srednia: (3, 6 > ; wysoka: (6, 10 >
-        public bool isMeet;
+        private string _diseaseCondition;  // stan - chory (C), zarazony (Z), zdrowiejacy (ZD), zdrowy (ZZ)
+        private int _age;   // wiek - [0-100]
+        private double _resistance; // odpornosc na chorobe [0,10] -> niska: (0, 3> ; srednia: (3, 6 > ; wysoka: (6, 10 >
+
+        private int _durationCondition;
+        public bool hasMetPerson;
 
 
-        public Person()
+        public Person() // domyslny kontruktor, wykorzystywany do tworzenia osobnikow podczas inicjalizacji symulacji
         {
             Random randomNumber = new Random();
 
-            position = new int[2] { 0, 0 };
+            _position = new int[2] { 0, 0 };
             int x = randomNumber.Next(100); // x
             int y = randomNumber.Next(100); // y
-            setPosition(x, y);
+            SetCurentPosition(x, y);
 
-            int s = randomNumber.Next(1, 3+1);
-            setSpeed(s);
+            int speed = randomNumber.Next(1, 3+1);
+            SetSpeed(speed);
 
-            int d = randomNumber.Next(1, 10);
-            setDirection(d);
+            int direction = randomNumber.Next(1, 10);
+            SetMovementDirection(direction);
 
-            int c = randomNumber.Next(1, 4+1);
-            setCondition(c);
+            int condition = randomNumber.Next(1, 4+1);
+            SetDiseaseCondition(condition);
 
-            int a = randomNumber.Next(1, 60+1);
-            setAge(a);
+            int age = randomNumber.Next(1, 60+1);
+            SetAge(age);
 
-            setNewResistance();
+            SetResistanceForNewAgeRange();
 
-            isMeet = false;
+            hasMetPerson = false;
         }
-        public void setPosition(int x,int y)
-        {
-            position[0] = x;
-            position[1] = y;
-        }
-        public int[] getPosition()
-        {
-            return position;
-        }
-        public void setSpeed(int s)
-        {
-            speed = s;
-        }
-        public int getSpeed()
-        {
-            return speed;
-        }
-        public void setDirection(int d)
-        {
-            direction = d;
-        }
-        public int getDirection()
-        {
-            return direction;
-        }
-        public void setCondition(int c)
-        {
-            if (c == 1) // Chory
-            {
-                condition = "C";
-                durationCondition = 1;
-            }
-            else if (c == 2) // Zarazony
-            {
-                condition = "Z";
-                durationCondition = 1;
-            }
-            else if (c == 3) // Zdrowiejacy
-            {
-                condition = "ZD";
-                durationCondition = 1;
-            }
-            else // Zdrowy
-            {
-                condition = "ZZ";
-                durationCondition = 1;
-            }
-        }
-        public string getCondition()
-        {
-            return condition;
-        }
-        public void setAge(int a)
-        {
-            age = a;
-        }
-        public int getAge()
-        {
-            return age;
-        }
-        public string checkResistance()
-        {
-            if ((age >= 0 && age < 15) || (age >= 70 && age <= 100)) // niska odpornosc,    wiek < 0, 15) U < 70, 100 >
-                return "low";
-            else if (age >= 40 && age < 70) // srednia odpornosc,   wiek < 40, 70)
-                return "medium";
-            else                            // wysoka odpornosc,    wiek < 15, 40)
-                return "high";
-        }
-        public void setNewResistance()
+        public Person(int[] position) // kontruktor, wykorzystywany do tworzenia nowego osobnika podczas spotkania dwoch osobnikow
         {
             Random randomNumber = new Random();
-            string resistanceType = checkResistance();
-            if (resistanceType ==  "low")
-                resistance = randomNumber.Next(1, 3 + 1);
-            else if (resistanceType == "medium") 
-                resistance = randomNumber.Next(3, 6 + 1);
-            else 
-                resistance = randomNumber.Next(6, 10 + 1);
+
+            SetCurentPosition(position[0], position[1]);
+
+            int speed = randomNumber.Next(1, 3 + 1);
+            SetSpeed(speed);
+
+            int direction = randomNumber.Next(1, 10);
+            SetMovementDirection(direction);
+
+            SetDiseaseCondition(4);
+
+            SetAge(0);
+
+            double resistance = GetMaxResistanceByAge();
+            SetResistance(resistance);
+
+            ResetConditionDuration();
+
+            hasMetPerson = true;
         }
-        public void setResistance(double resistance)
+        public void SetCurentPosition(int x,int y)
         {
-            this.resistance = resistance;
+            _position[0] = x;
+            _position[1] = y;
         }
-        public double getResistance()
+        public int[] GetCurrentPosition()
         {
-            return resistance;
+            return _position;
+        }
+        public void SetSpeed(int speed)
+        {
+            _speed = speed;
+        }
+        public int GetSpeed()
+        {
+            return _speed;
+        }
+        public void SetMovementDirection(int direction)
+        {
+            _direction = direction;
+        }
+        public int GetMovementDirection()
+        {
+            return _direction;
+        }
+        public void SetDiseaseCondition(int condition)
+        {
+            if (condition == 1) // Chory (C)
+            {
+                _diseaseCondition = "C";
+                ResetConditionDuration();
+            }
+            else if (condition == 2) // Zarazony (Z)
+            {
+                _diseaseCondition = "Z";
+                ResetConditionDuration();
+            }
+            else if (condition == 3) // Zdrowiejacy (ZD)
+            {
+                _diseaseCondition = "ZD";
+                ResetConditionDuration();
+            }
+            else // Zdrowy (ZZ)
+            {
+                _diseaseCondition = "ZZ";
+                ResetConditionDuration();
+            }
+        }
+        public string GetDiseaseCondition()
+        {
+            return _diseaseCondition;
+        }
+        public void IncreaseConditionDuration()
+        {
+            _durationCondition++;
+        }
+        public int GetConditionDuration()
+        {
+            return _durationCondition;
+        }
+        public void ResetConditionDuration()
+        {
+            _durationCondition = 0;
+        }
+        public void SetAge(int age)
+        {
+            _age = age;
+        }
+        public int GetAge()
+        {
+            return _age;
+        }
+        public void SetResistanceForNewAgeRange()
+        {
+            Random randomNumber = new Random();
+            string resistanceRangeName = GetResistanceRangeName();
+            if (resistanceRangeName == "low")
+                _resistance = randomNumber.Next(1, 3 + 1);
+            else if (resistanceRangeName == "medium")
+                _resistance = randomNumber.Next(3, 6 + 1);
+            else
+                _resistance = randomNumber.Next(6, 10 + 1);
+        }
+        public string GetResistanceRangeName()
+        {
+            if ((_age >= 0 && _age < 15) || (_age >= 70 && _age <= 100))    // niska odpornosc,    wiek < 0, 15) U < 70, 100 >
+                return "low";
+            else if (_age >= 40 && _age < 70)   // srednia odpornosc,   wiek < 40, 70)
+                return "medium";
+            else    // wysoka odpornosc,    wiek < 15, 40)
+                return "high";
+        }
+        public void SetResistance(double resistance)
+        {
+            _resistance = resistance;
+        }
+        public double GetCurrentResistance()
+        {
+            return _resistance;
+        }
+        public double GetMaxResistanceByAge()
+        {
+            if ((_age >= 0 && _age < 15) || (_age >= 70 && _age <= 100))    // niska odpornosc,    wiek < 0, 15) U < 70, 100 >,     odpornosc (0,3>
+                return 3;
+            else if (_age >= 40 && _age < 70)   // srednia odpornosc,   wiek < 40, 70)
+                return 6;
+            else    // wysoka odpornosc,    wiek < 15, 40)
+                return 10;
         }
     }
 }

@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-
-namespace DiseaseSimulation
+﻿namespace DiseaseSimulation
 {
     internal class Simulation
     {
         public Person[] Persons;
         public int N = 100; // Ilosc osobnikow na start symulacji
-        public int CountTurns;
-        public int GreenPersons;    // ilosc zdrowych osobników (ZZ)
-        public int OrangePersons;   // ilosc zarazonych osobników (Z)
-        public int YellowPersons;   // ilosc zdrowiejacych osobników (ZD)
-        public int RedPersons;      // ilosc chorych osobników (C)
-        public int BirthPersons;    // ilosc narodzonych osobników
-        public int DeadPersons;     // ilosc zmarlych osobników
+        public int turnCount;
+        public int greenPersonsCount = 0;   // ilosc zdrowych osobników (ZZ)
+        public int orangePersonsCount = 0;  // ilosc zarazonych osobników (Z)
+        public int yellowPersonsCount = 0;  // ilosc zdrowiejacych osobników (ZD)
+        public int redPersonsCount = 0;     // ilosc chorych osobników (C)
+        public int birthPersonsCount = 0;   // ilosc narodzonych osobników
+        public int deadPersonsCount = 0;    // ilosc zmarlych osobników
+        public int deadCountByAge = 0;      // ilosc zmarlych osobników przez wiek
+        public int deadCountByDisease = 0;  // ilosc zmarlych osobników przez chorobe
         public Simulation() // Konstruktor
         {
             Persons = new Person[N];
@@ -25,209 +20,183 @@ namespace DiseaseSimulation
             {
                 Person p = new Person();
                 Persons[i] = p;
-                WhichCondition(i);
+                ConditionCount(i);
             }
-            CountTurns = 1;
+            turnCount = 1;
         }
         public void TurnSession()   // Głowna petla - Przebieg tury symulacji
         {
-            moveAllPerson();                    // Porusza wszystkimi osobnikami
+            MoveAllPerson();                    // Porusza wszystkimi osobnikami
             for (int i = 0; i < N; i++)
             {
                 IsMeetSomeone(Persons[i]);      // Sprawdza czy osobnik sie z kims spotkal
-                gettingOlder(Persons[i]);       // starzeje osobnika
-                DurationCondition(Persons[i]);  // Sprawdza stan oraz odpornosc osobnika
+                ChangeAgePerTurn(Persons[i]);       // starzeje osobnika
+                CheckDurationConditionPerTurn(Persons[i]);  // Sprawdza stan oraz odpornosc osobnika
 
-                isDead(i);                      // sprawdza czy osobnik umarl
+                IsDead(i);                      // sprawdza czy osobnik umarl
             }
-            clearMeeting();       // resetuje wszystkie spotkania
-            CountTurns++;
+            ClearMeeting();       // resetuje wszystkie spotkania
+            turnCount++;
         }
-        private void WhichCondition(int i)  // Zlicza ilosc stanow wsrod osobnikow
+        private void ConditionCount(int i)  // Zlicza ilosc stanow wsrod osobnikow podczas inicjalizacji symulacji
         {
-            string c = Persons[i].getCondition();
+            string c = Persons[i].GetDiseaseCondition();
             if (c == "C")
-                RedPersons++;
+                redPersonsCount++;
             else if (c == "Z")
-                YellowPersons++;
+                yellowPersonsCount++;
             else if (c == "ZD")
-                OrangePersons++;
+                orangePersonsCount++;
             else
-                GreenPersons++;
+                greenPersonsCount++;
         }
-        private void DurationCondition(Person person) // Sprawdza stan oraz odpornosc osobnika
+        private void CheckDurationConditionPerTurn(Person person) // Sprawdza stan oraz odpornosc osobnika co ture
         {
-            string condition = person.getCondition();
-            int duration = person.durationCondition;
-            if(condition=="Z" && duration > 2)
+            string condition = person.GetDiseaseCondition();
+            int durationCondition = person.GetConditionDuration();
+            if(condition=="Z" && durationCondition > 2)
             {
-                person.setCondition(1);
-                person.durationCondition = 1;
-                YellowPersons--;
-                RedPersons++;            
+                person.SetDiseaseCondition(1);
+                person.ResetConditionDuration();
+                yellowPersonsCount--;
+                redPersonsCount++;            
             }
-            else if (condition == "C" && duration > 7)
+            else if (condition == "C" && durationCondition > 7)
             {
-                person.setCondition(3);
-                person.durationCondition = 1;
-                RedPersons--;
-                OrangePersons++;
+                person.SetDiseaseCondition(3);
+                person.ResetConditionDuration();
+                redPersonsCount--;
+                orangePersonsCount++;
             }
-            else if (condition == "ZD" && duration > 5)
+            else if (condition == "ZD" && durationCondition > 5)
             {
-                person.setCondition(4);
-                person.durationCondition = 1;
-                OrangePersons--;
-                GreenPersons++;
+                person.SetDiseaseCondition(4);
+                person.ResetConditionDuration();
+                orangePersonsCount--;
+                greenPersonsCount++;
             }
-            resistanceCondition(person);
-            person.durationCondition++;
+            ChangeResistancePerTurn(person);
+            person.IncreaseConditionDuration();
         }
-
-        private void clearMeeting() // resetuje mozliwosc spotkania wszystkich osobnikow
+        private void ChangeDiseaseCondition(Person person,string newCondition)
         {
-            for (int i = 0; i < N; i++)
-                Persons[i].isMeet = false;
-        }
+            string oldCondition = person.GetDiseaseCondition();
+            if (oldCondition == "C")
+                redPersonsCount--;
+            else if (oldCondition == "Z")
+                yellowPersonsCount--;
+            else if (oldCondition == "ZD")
+                orangePersonsCount--;
+            else
+                greenPersonsCount--;
 
-        private void checkConditionDuringMeeting(Person personOne, Person personTwo) // sprawdza stany osobnikow podczas spotkania
-        {
-            personOne.isMeet = true;
-            personTwo.isMeet = true;
-            string conditionPersonOne = personOne.getCondition();
-            string conditionPersonTwo = personTwo.getCondition();
-
-            if (conditionPersonOne == "ZZ" && conditionPersonTwo == "Z" || conditionPersonOne == "Z" && conditionPersonTwo == "ZZ"){    // ZZ z Z || Z z ZZ
-                if (conditionPersonOne == "ZZ"){
-                    if (personOne.checkResistance() == "low")
-                        personOne.setCondition(2);
-                }
-                else{
-                    if (personTwo.checkResistance() == "low")
-                        personTwo.setCondition(2);
-                }
-            }
-            else if (conditionPersonOne == "ZZ" && conditionPersonTwo == "C" || conditionPersonOne == "ZZ" && conditionPersonTwo == "C"){   // ZZ z C || C z ZZ
-                if (conditionPersonOne == "ZZ"){
-                    if (personOne.checkResistance() == "low" || personOne.checkResistance() == "medium")
-                        personOne.setCondition(2);
-                    else{
-                        double resistancePerson = personOne.getResistance();
-                        resistancePerson -= 3;
-                        personOne.setResistance(resistancePerson);
-                    }
-                }
-                else{
-                    if (personOne.checkResistance() == "low" || personOne.checkResistance() == "medium")
-                        personOne.setCondition(2);
-                    else{
-                        double resistancePerson = personTwo.getResistance();
-                        resistancePerson -= 3;
-                        personTwo.setResistance(resistancePerson);
-                    }
-                }
-            }
-            else if (conditionPersonOne == "ZZ" && conditionPersonTwo == "ZD" || conditionPersonOne == "ZD" && conditionPersonTwo == "ZZ"){   // ZZ z ZD || ZD z ZZ
-                if (conditionPersonOne == "ZZ"){
-                    double resistancePerson = personOne.getResistance();
-                    resistancePerson += 1;
-                    personOne.setResistance(resistancePerson);
-                }
-                else{
-                    double resistancePerson = personTwo.getResistance();
-                    resistancePerson += 1;
-                    personTwo.setResistance(resistancePerson);
-                }
-
-            }
-            else if (conditionPersonOne == "ZZ" && conditionPersonTwo == "ZZ") // ZZ z ZZ
+            if (newCondition == "C")   // Chory (C)
             {
-                double resistancePerson = personTwo.getResistance();
-                resistancePerson += 1;
-                personTwo.setResistance(resistancePerson);
+                person.SetDiseaseCondition(1);
+                redPersonsCount++;
             }
-            else if (conditionPersonOne == "C" && conditionPersonTwo == "Z" || conditionPersonOne == "Z" && conditionPersonTwo == "C"){     // C z Z || Z z C
-                if (conditionPersonOne == "C"){
-                    if (personOne.checkResistance() == "low" || personOne.checkResistance() == "medium")
-                        personOne.setCondition(1);
-                    else{
-                        double resistancePerson = personTwo.getResistance();
-                        resistancePerson -= 3;
-                        personTwo.setResistance(resistancePerson);
-                    }
-                }
-                else{
-                    if (personTwo.checkResistance() == "low" || personTwo.checkResistance() == "medium")
-                        personTwo.setCondition(1);
-                    else{
-                        double resistancePerson = personOne.getResistance();
-                        resistancePerson -= 3;
-                        personOne.setResistance(resistancePerson);
-                    }
-                }
+            else if (newCondition == "Z")  // Zarazony (Z)
+            {
+                person.SetDiseaseCondition(2);
+                yellowPersonsCount++;
             }
-            else if (conditionPersonOne == "C" && conditionPersonTwo == "ZD" || conditionPersonOne == "ZD" && conditionPersonTwo == "C"){ // C z ZD || ZD z C
-                if (conditionPersonOne == "C"){
-                    if (personTwo.checkResistance() == "low" || personTwo.checkResistance() == "medium")
-                        personTwo.setCondition(2);
-                }
-                else{
-                    if (personOne.checkResistance() == "low" || personOne.checkResistance() == "medium")
-                        personOne.setCondition(2);
-                }
+            else if(newCondition == "ZD")  // Zdrowiejacy (ZD)
+            {
+                person.SetDiseaseCondition(3);
+                orangePersonsCount++;
             }
-
-            NewDirection(personOne);
-            NewDirection(personTwo);
+            else    // Zdrowy (ZZ)
+            {
+                person.SetDiseaseCondition(4);
+                greenPersonsCount++;
+            }
         }
-
-        private void resistanceCondition(Person person) // zmienia odpornosc osobnika
+        private void ChangeResistancePerTurn(Person person) // zmienia odpornosc osobnika
         {
-            string condition = person.getCondition();
-            double resistance = person.getResistance();
+            string condition = person.GetDiseaseCondition();
+            double resistance = person.GetCurrentResistance();
             if (condition == "Z")
             {
                 resistance -= 0.1;
-                person.setResistance(resistance);
+                person.SetResistance(resistance);
             }
             else if (condition == "C")
             {
                 resistance -= 0.5;
-                person.setResistance(resistance);
+                person.SetResistance(resistance);
             }
             else if (condition == "ZD")
             {
                 resistance += 0.1;
-                person.setResistance(resistance);
+                person.SetResistance(resistance);
             }
             else
             {
                 resistance += 0.05;
-                person.setResistance(resistance);
+                person.SetResistance(resistance);
             }
         }
-
-        private void IsMeetSomeone(Person person) // Sprawdza czy osobnik sie z kims spotkal
+        private void ChangeAgePerTurn(Person person) // starzeje osobnika o 1 co turę
         {
-            if (person.isMeet != true) {
-                Person closestPerson = FindClosestPerson(person);
-                if (closestPerson != null) {
-                    checkConditionDuringMeeting(person, closestPerson);
+            int age = person.GetAge();
+            age++;
+            person.SetAge(age);
+
+            if (age == 0 || age == 70)
+                person.SetResistanceForNewAgeRange();
+            else if (age == 40)
+                person.SetResistanceForNewAgeRange();
+            else if (age == 15)
+                person.SetResistanceForNewAgeRange();
+        }
+        private void IsDead(int i) // sprawdza czy osobnik powinien nie zyc ze wzgledu na wiek > 100 lub odpornosc < 0
+        {
+            if (Persons[i].GetAge() > 100 || Persons[i].GetCurrentResistance() <= 0)
+            {
+                if(Persons[i].GetAge() > 100)
+                    deadCountByAge++;
+                else
+                    deadCountByDisease++;
+
+                string condition = Persons[i].GetDiseaseCondition();
+                if (condition == "C")
+                    redPersonsCount--;
+                else if (condition == "Z")
+                    yellowPersonsCount--;
+                else if (condition == "ZD")
+                    orangePersonsCount--;
+                else
+                    greenPersonsCount--;
+
+                for (int a = i; a < Persons.Length - 1; a++)
+                {
+                    Persons[a] = Persons[a + 1];
                 }
+                N--;
+
+                deadPersonsCount = deadCountByAge + deadCountByDisease;
+                Array.Resize(ref Persons, Persons.Length - 1);
             }
         }
-
+        private Person BirthPerson(Person firstPerson, Person secondPerson) // Narodziny nowego osobnika, szansa na to wynosi  0.2
+        {
+            if (firstPerson.GetAge() > 20 && firstPerson.GetAge() < 40 && secondPerson.GetAge() > 20 && secondPerson.GetAge() < 40)
+            {
+                Person child = new Person(firstPerson.GetCurrentPosition());
+            }
+            return firstPerson;
+        }
         private Person FindClosestPerson(Person person) // Szuka najblizszej osoby; Spotkanie odbywa sie jesli ktos jest w odleglosc 2 kratek
         {
-            int[] iXY = person.getPosition();
+            int[] iXY = person.GetCurrentPosition();
             double minDistance = double.MaxValue;
             double maxX, maxY;
             Person closestPerson = null;
             foreach (Person someone in Persons)
             {
-                if (person != someone && someone.isMeet == false)
+                if (person != someone && someone.hasMetPerson == false)
                 {
-                    int[] jXY = someone.getPosition();
+                    int[] jXY = someone.GetCurrentPosition();
                     maxX = jXY[0] - iXY[0];
                     maxY = jXY[1] - iXY[1];
                     double distance = Math.Sqrt(maxX * maxX + maxY * maxY);
@@ -240,61 +209,169 @@ namespace DiseaseSimulation
             }
             return closestPerson;
         }
-        private void gettingOlder(Person person) // starzeje osobnika
+        private void IsMeetSomeone(Person person) // Sprawdza czy osobnik sie z kims spotkal
         {
-            int age = person.getAge();
-            age++;
-            person.setAge(age);
-
-            if (age == 0 || age == 70)
-                person.setNewResistance();
-            else if (age == 40)
-                person.setNewResistance();
-            else if (age == 15)
-                person.setNewResistance();
-        }
-        private void isDead(int i) // sprawdza czy osobnik powinien nie zyc
-        {
-            if (Persons[i].getAge() > 100 || Persons[i].getResistance() <= 0)
+            if (person.hasMetPerson != true)
             {
-                string condition = Persons[i].getCondition();
-                if (condition == "C")
-                    RedPersons--;
-                else if (condition == "Z")
-                    YellowPersons--;
-                else if (condition == "ZD")
-                    OrangePersons--;
-                else
-                    GreenPersons--;
-
-                for (int a = i; a < Persons.Length - 1; a++)
+                Person closestPerson = FindClosestPerson(person);
+                if (closestPerson != null)
                 {
-                    Persons[a] = Persons[a + 1];
+                    CheckConditionDuringMeeting(person, closestPerson);
                 }
-                N--;
-                DeadPersons++;
-                Array.Resize(ref Persons, Persons.Length - 1);
             }
         }
-        private void moveAllPerson() // porusza wszystkimi osobnikami
+        private void CheckConditionDuringMeeting(Person firstPerson, Person secondPerson) // sprawdza stany osobnikow podczas spotkania
+        {
+            firstPerson.hasMetPerson = true;
+            secondPerson.hasMetPerson = true;
+            string firstPersonCondition = firstPerson.GetDiseaseCondition();
+            string secondPersonCondition = secondPerson.GetDiseaseCondition();
+
+            if (firstPersonCondition == "ZZ" && secondPersonCondition == "Z" || firstPersonCondition == "Z" && secondPersonCondition == "ZZ")
+            {    // ZZ z Z || Z z ZZ
+                if (firstPersonCondition == "ZZ")
+                {
+                    if (firstPerson.GetResistanceRangeName() == "low")
+                        ChangeDiseaseCondition(firstPerson, "Z");
+                }
+                else
+                {
+                    if (secondPerson.GetResistanceRangeName() == "low")
+                        ChangeDiseaseCondition(secondPerson, "Z");
+                }
+            }
+            else if (firstPersonCondition == "ZZ" && secondPersonCondition == "C" || firstPersonCondition == "C" && secondPersonCondition == "ZZ")
+            {   // ZZ z C || C z ZZ
+                if (firstPersonCondition == "ZZ")
+                {
+                    if (firstPerson.GetResistanceRangeName() == "low" || firstPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(firstPerson, "Z");
+                    else
+                    {
+                        double newResistance = firstPerson.GetCurrentResistance() - 3;
+                        firstPerson.SetResistance(newResistance);
+                    }
+                }
+                else
+                {
+                    if (secondPerson.GetResistanceRangeName() == "low" || secondPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(secondPerson, "Z");
+                    else
+                    {
+                        double newResistance = secondPerson.GetCurrentResistance() - 3;
+                        secondPerson.SetResistance(newResistance);
+                    }
+                }
+            }
+            else if (firstPersonCondition == "ZZ" && secondPersonCondition == "ZD" || firstPersonCondition == "ZD" && secondPersonCondition == "ZZ")
+            {   // ZZ z ZD || ZD z ZZ
+                if (firstPersonCondition == "ZZ")
+                {
+                    double newResistance = secondPerson.GetCurrentResistance() + 1;
+                    secondPerson.SetResistance(newResistance);
+                }
+                else
+                {
+                    double newResistance = firstPerson.GetCurrentResistance() + 1;
+                    firstPerson.SetResistance(newResistance);
+                }
+
+            }
+            else if (firstPersonCondition == "ZZ" && secondPersonCondition == "ZZ")
+            {     // ZZ z ZZ
+                double resistancePersonOne = firstPerson.GetMaxResistanceByAge();
+                secondPerson.SetResistance(resistancePersonOne);
+                double resistancePersonTwo = secondPerson.GetMaxResistanceByAge();
+                secondPerson.SetResistance(resistancePersonTwo);
+            }
+            else if (firstPersonCondition == "C" && secondPersonCondition == "Z" || firstPersonCondition == "Z" && secondPersonCondition == "C")
+            {     // C z Z || Z z C
+                if (firstPersonCondition == "C")
+                {
+                    if (secondPerson.GetResistanceRangeName() == "low" || secondPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(secondPerson, "C");
+                    firstPerson.ResetConditionDuration();
+                }
+                else
+                {
+                    if (firstPerson.GetResistanceRangeName() == "low" || firstPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(firstPerson, "C");
+                    secondPerson.ResetConditionDuration();
+                }
+            }
+            else if (firstPersonCondition == "C" && secondPersonCondition == "ZD" || firstPersonCondition == "ZD" && secondPersonCondition == "C")
+            {   // C z ZD || ZD z C
+                if (firstPersonCondition == "C")
+                {
+                    if (secondPerson.GetResistanceRangeName() == "low" || secondPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(secondPerson, "Z");
+                }
+                else
+                {
+                    if (firstPerson.GetResistanceRangeName() == "low" || firstPerson.GetResistanceRangeName() == "medium")
+                        ChangeDiseaseCondition(firstPerson, "Z");
+                }
+            }
+            else if (firstPersonCondition == "C" && secondPersonCondition == "C")
+            {   // C z C
+                if (firstPerson.GetCurrentResistance() < secondPerson.GetCurrentResistance())
+                {
+                    firstPerson.SetResistance(firstPerson.GetCurrentResistance());
+                    secondPerson.SetResistance(firstPerson.GetCurrentResistance());
+                }
+                else
+                {
+                    secondPerson.SetResistance(secondPerson.GetCurrentResistance());
+                    firstPerson.SetResistance(secondPerson.GetCurrentResistance());
+                }
+                firstPerson.IncreaseConditionDuration();
+                secondPerson.IncreaseConditionDuration();
+            }
+            else if (firstPersonCondition == "Z" && secondPersonCondition == "ZD" || firstPersonCondition == "ZD" && secondPersonCondition == "C")
+            {   // Z z ZD || ZD z Z
+                if (secondPersonCondition == "ZD")
+                {
+                    double resistancePerson = secondPerson.GetCurrentResistance();
+                    resistancePerson -= 1;
+                    secondPerson.SetResistance(resistancePerson);
+                }
+                else
+                {
+                    double resistancePerson = firstPerson.GetCurrentResistance();
+                    resistancePerson -= 1;
+                    firstPerson.SetResistance(resistancePerson);
+                }
+            }
+            else if (firstPersonCondition == "Z" && secondPersonCondition == "Z")
+            {   // Z z Z
+                double resistancePersonOne = firstPerson.GetCurrentResistance() - 1;
+                firstPerson.SetResistance(resistancePersonOne);
+                double resistancePersonTwo = secondPerson.GetCurrentResistance() - 1;
+                secondPerson.SetResistance(resistancePersonTwo);
+            }
+
+            ChangeMovementDirection(firstPerson);
+            ChangeMovementDirection(secondPerson);
+        }
+        private void MoveAllPerson() // porusza wszystkimi osobnikami
         {
             for (int i = 0; i < N; i++)
             {
-                int[] XY = Persons[i].getPosition();
-                int direction = Persons[i].getDirection();
-                int speed = Persons[i].getSpeed();
+                int[] XY = Persons[i].GetCurrentPosition();
+                int direction = Persons[i].GetMovementDirection();
+                int speed = Persons[i].GetSpeed();
 
                 if (direction == 1)
                 {
                     if (XY[0] - speed < 0)
                     {
                         XY[0] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else if (XY[1] - speed < 0)
                     {
                         XY[1] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -307,7 +384,7 @@ namespace DiseaseSimulation
                     if (XY[1] - speed < 0)
                     {
                         XY[1] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -319,12 +396,12 @@ namespace DiseaseSimulation
                     if (XY[0] + speed > 100)
                     {
                         XY[0] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else if (XY[1] - speed < 0)
                     {
                         XY[1] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -337,7 +414,7 @@ namespace DiseaseSimulation
                     if (XY[0] - speed < 0)
                     {
                         XY[0] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -346,14 +423,14 @@ namespace DiseaseSimulation
                 }
                 else if (direction == 5)
                 {
-                    NewDirection(Persons[i]);
+                    ChangeMovementDirection(Persons[i]);
                 }
                 else if (direction == 6)
                 {
                     if (XY[0] + speed > 100)
                     {
                         XY[0] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -366,13 +443,13 @@ namespace DiseaseSimulation
                     if (XY[0] - speed < 0)
                     {
                         XY[0] = 0;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
 
                     else if (XY[1] + speed > 100)
                     {
                         XY[1] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -386,7 +463,7 @@ namespace DiseaseSimulation
                     if (XY[1] + speed > 100)
                     {
                         XY[1] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -399,13 +476,13 @@ namespace DiseaseSimulation
                     if (XY[0] + speed > 100)
                     {
                         XY[0] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
 
                     else if (XY[1] + speed > 100)
                     {
                         XY[1] = 100;
-                        NewDirection(Persons[i]);
+                        ChangeMovementDirection(Persons[i]);
                     }
                     else
                     {
@@ -413,14 +490,19 @@ namespace DiseaseSimulation
                         XY[1] = XY[1] + speed;
                     }
                 }
-                Persons[i].setPosition(XY[0], XY[1]);
+                Persons[i].SetCurentPosition(XY[0], XY[1]);
             }
         }
-        private void NewDirection(Person person) // ustawia nowy losowy kierunek ruchu dla osobnika
+        private void ChangeMovementDirection(Person person) // ustawia nowy losowy kierunek ruchu dla osobnika
         {
             Random randomNumber = new Random();
             int newD = randomNumber.Next(1, 10);
-            person.setDirection(newD);
+            person.SetMovementDirection(newD);
+        }
+        private void ClearMeeting() // resetuje mozliwosc spotkania wszystkich osobnikow
+        {
+            for (int i = 0; i < N; i++)
+                Persons[i].hasMetPerson = false;
         }
     }
 
