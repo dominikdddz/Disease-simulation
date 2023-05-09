@@ -1,9 +1,13 @@
-﻿namespace DiseaseSimulation
+﻿using System;
+using System.Security.Cryptography.X509Certificates;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+
+namespace DiseaseSimulation
 {
     internal class Simulation
     {
         public Person[] Persons;
-        public int N = 100; // Ilosc osobnikow na start symulacji
+        public int N; // Ilosc osobnikow na start symulacji
         public int turnCount;
         public int greenPersonsCount = 0;   // ilosc zdrowych osobników (ZZ)
         public int orangePersonsCount = 0;  // ilosc zarazonych osobników (Z)
@@ -13,17 +17,47 @@
         public int deadPersonsCount = 0;    // ilosc zmarlych osobników
         public int deadCountByAge = 0;      // ilosc zmarlych osobników przez wiek
         public int deadCountByDisease = 0;  // ilosc zmarlych osobników przez chorobe
-        public Simulation() // Konstruktor
+        public double birthProbability = 0.2; // szansa na urodzenie nowego osobnika podczas spotkania
+        private bool isBorn = true;
+        private int x;
+        private int y;
+        public Simulation(int N,double red, bool born,int x,int y)
         {
+            Random randomNumber = new Random();
+            this.N = N;
+            isBorn = born;
             Persons = new Person[N];
-            for(int i = 0; i < N; i++)
+            this.x = x;
+            this.y = y;
+            for (int i = 0; i < N; i++)
             {
-                Person p = new Person();
+                Person p = new Person(this.x, this.y);
+                if (randomNumber.NextDouble() < red)
+                {
+                    p.SetDiseaseCondition(randomNumber.Next(1, 2 + 1));
+                }
+                else
+                {
+                    p.SetDiseaseCondition(randomNumber.Next(3, 4 + 1));
+                }
                 Persons[i] = p;
                 ConditionCount(i);
             }
             turnCount = 1;
         }
+        /*
+        public Simulation() // Konstruktor
+        {
+            Persons = new Person[N];
+            for(int i = 0; i < N; i++)
+            {
+                Person p = new Person(x, y);
+                Persons[i] = p;
+                ConditionCount(i);
+            }
+            turnCount = 1;
+        }
+        */
         public void TurnSession()   // Głowna petla - Przebieg tury symulacji
         {
             MoveAllPerson();                    // Porusza wszystkimi osobnikami
@@ -178,13 +212,25 @@
                 Array.Resize(ref Persons, Persons.Length - 1);
             }
         }
-        private Person BirthPerson(Person firstPerson, Person secondPerson) // Narodziny nowego osobnika, szansa na to wynosi  0.2
+        private void BirthPerson(Person firstPerson, Person secondPerson) // Narodziny nowego osobnika, szansa na to wynosi  0.2
         {
-            if (firstPerson.GetAge() > 20 && firstPerson.GetAge() < 40 && secondPerson.GetAge() > 20 && secondPerson.GetAge() < 40)
+            if (firstPerson.GetAge() >= 20 && firstPerson.GetAge() <= 40 && secondPerson.GetAge() >= 20 && secondPerson.GetAge() <= 40)
             {
-                Person child = new Person(firstPerson.GetCurrentPosition());
+                Random randomNumber = new Random();
+                if (randomNumber.NextDouble() < birthProbability)
+                {
+                    int count = randomNumber.Next(1, 2 + 1);
+
+                    Array.Resize(ref Persons, N + count);
+                    for (int i = N; i < N + count; i++)
+                    {
+                        Persons[i] = new Person(firstPerson.GetCurrentPosition());
+                        birthPersonsCount++;
+                        greenPersonsCount++;
+                    }
+                    N += count;
+                }
             }
-            return firstPerson;
         }
         private Person FindClosestPerson(Person person) // Szuka najblizszej osoby; Spotkanie odbywa sie jesli ktos jest w odleglosc 2 kratek
         {
@@ -217,6 +263,10 @@
                 if (closestPerson != null)
                 {
                     CheckConditionDuringMeeting(person, closestPerson);
+                    if (isBorn == true)
+                    {
+                        BirthPerson(person, closestPerson);
+                    } 
                 }
             }
         }
@@ -275,7 +325,6 @@
                     double newResistance = firstPerson.GetCurrentResistance() + 1;
                     firstPerson.SetResistance(newResistance);
                 }
-
             }
             else if (firstPersonCondition == "ZZ" && secondPersonCondition == "ZZ")
             {     // ZZ z ZZ
@@ -349,7 +398,6 @@
                 double resistancePersonTwo = secondPerson.GetCurrentResistance() - 1;
                 secondPerson.SetResistance(resistancePersonTwo);
             }
-
             ChangeMovementDirection(firstPerson);
             ChangeMovementDirection(secondPerson);
         }
@@ -393,9 +441,9 @@
                 }
                 else if (direction == 3)
                 {
-                    if (XY[0] + speed > 100)
+                    if (XY[0] + speed > x)
                     {
-                        XY[0] = 100;
+                        XY[0] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
                     else if (XY[1] - speed < 0)
@@ -427,9 +475,9 @@
                 }
                 else if (direction == 6)
                 {
-                    if (XY[0] + speed > 100)
+                    if (XY[0] + speed > x)
                     {
-                        XY[0] = 100;
+                        XY[0] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
                     else
@@ -446,9 +494,9 @@
                         ChangeMovementDirection(Persons[i]);
                     }
 
-                    else if (XY[1] + speed > 100)
+                    else if (XY[1] + speed > x)
                     {
-                        XY[1] = 100;
+                        XY[1] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
                     else
@@ -460,9 +508,9 @@
                 }
                 else if (direction == 8)
                 {
-                    if (XY[1] + speed > 100)
+                    if (XY[1] + speed > x)
                     {
-                        XY[1] = 100;
+                        XY[1] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
                     else
@@ -473,15 +521,15 @@
                 else if (direction == 9)
                 {
 
-                    if (XY[0] + speed > 100)
+                    if (XY[0] + speed > x)
                     {
-                        XY[0] = 100;
+                        XY[0] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
 
                     else if (XY[1] + speed > 100)
                     {
-                        XY[1] = 100;
+                        XY[1] = x;
                         ChangeMovementDirection(Persons[i]);
                     }
                     else
@@ -504,6 +552,20 @@
             for (int i = 0; i < N; i++)
                 Persons[i].hasMetPerson = false;
         }
+        public string CheckMouseCordinateWithPersons(int x,int y)
+        {
+            foreach (Person person in Persons)
+            {
+                int[] xy = person.GetCurrentPosition();
+                if (xy[0]==x && xy[1]==y)
+                {
+                    string v = $"Wiek: {person.GetAge}\nStan: {person.GetDiseaseConditionName}\n({x}, {y})";
+                    return v;
+                }
+            }
+            return "";
+        }
+
     }
 
 }

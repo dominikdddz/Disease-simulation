@@ -1,8 +1,10 @@
-﻿namespace DiseaseSimulation
+﻿using System;
+
+namespace DiseaseSimulation
 {
     internal class Person
     {
-        private int[] _position;    // położenie - [x,y] od [0-100]
+        private int[] _position = new int[2] { 0, 0 };    // położenie - [x,y] od [0-100]
         private int _speed;     // predkosc - [1,2,3]
         private int _direction;     // kierunek ruchu
         //  [7] [8] [9]
@@ -15,15 +17,13 @@
         private int _durationCondition;
         public bool hasMetPerson;
 
-
-        public Person() // domyslny kontruktor, wykorzystywany do tworzenia osobnikow podczas inicjalizacji symulacji
+        public Person(int x, int y) // domyslny kontruktor, wykorzystywany do tworzenia osobnikow podczas inicjalizacji symulacji
         {
             Random randomNumber = new Random();
 
-            _position = new int[2] { 0, 0 };
-            int x = randomNumber.Next(100); // x
-            int y = randomNumber.Next(100); // y
-            SetCurentPosition(x, y);
+            int x0 = randomNumber.Next(x); // x
+            int y0 = randomNumber.Next(y); // y
+            SetCurentPosition(x0, y0);
 
             int speed = randomNumber.Next(1, 3+1);
             SetSpeed(speed);
@@ -172,6 +172,26 @@
                 return 6;
             else    // wysoka odpornosc,    wiek < 15, 40)
                 return 10;
+        }
+        public string GetDiseaseConditionName()
+        {
+            string name = "";
+            switch (_diseaseCondition)
+            {
+                case "C":
+                    name = "Chory";
+                    break;
+                case "Z":
+                    name = "Zarazony";
+                    break;
+                case "ZD":
+                    name = "Zdrowiejacy";
+                    break;
+                case "ZZ":
+                    name = "Zdrowy";
+                    break;
+            }
+            return name;
         }
     }
 }

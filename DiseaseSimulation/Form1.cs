@@ -1,11 +1,20 @@
+using System.Text.Json;
+
 namespace DiseaseSimulation
 {
     public partial class Form1 : Form
     {
-        private Simulation simulation = new Simulation();
+        private Simulation simulation;
         public Form1()
         {
             InitializeComponent();
+        }
+        private void SimulationTimerTurn(object sender, EventArgs e)
+        {
+            simulation.TurnSession();
+            UpdateUITextLabel();
+            StopSimulation();
+            PictureBoxGrid.Invalidate();
         }
         private void UpdatePictureBox(object sender, PaintEventArgs e)
         {
@@ -16,7 +25,7 @@ namespace DiseaseSimulation
                 int[] XY = simulation.Persons[i].GetCurrentPosition();
                 string cond = simulation.Persons[i].GetDiseaseCondition();
                 SolidBrush color = CheckColor(cond);
-                Rectangle rect = new Rectangle(XY[0] * 5, XY[1] * 5, 8, 8);
+                Rectangle rect = new Rectangle(XY[0], XY[1], 8, 8);
                 pic.FillEllipse(color, rect);
             }
         }
@@ -57,30 +66,23 @@ namespace DiseaseSimulation
             CountsPersons.Text = simulation.N.ToString();
         }
 
+        private void buttonNewSimulation_Click(object sender, EventArgs e)
+        {
+            groupBoxInitialization.Visible = false;
+            initializationSimulation();
+        }
+
         private void StopSimulation()
         {
-            if (simulation.deadPersonsCount == simulation.N || simulation.greenPersonsCount == simulation.N)
+            if (simulation.greenPersonsCount == simulation.N)
             {
                 SimulationTimerClock.Stop();
                 StopButton.Enabled = false;
                 StartButton.Enabled = false;
             }
         }
-
-        private void ExportSimulationDataToCsvFile()  { }
-        private void ImporCsvFileDataToSimulation() { }
-
-        private void SimulationTimerTurn(object sender, EventArgs e)
-        {
-            simulation.TurnSession();
-            UpdateUITextLabel();
-            StopSimulation();
-            PictureBoxGrid.Invalidate();
-        }
-
         private void StartSimulationButton(object sender, EventArgs e)
         {
-            PictureBoxGrid.Visible = true;
             SimulationTimerClock.Start();
             StopButton.Enabled = true;
             StartButton.Enabled = false;
@@ -92,21 +94,99 @@ namespace DiseaseSimulation
             StartButton.Enabled = true;
         }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
+        private void initializationSimulation()
         {
+            double red = 0;
+            int N = 100;
+            bool ischeckced = false;
+            if (radioButtonSick10p.Checked == true)
+            {
+                red = 0.1;
+            }
+            else if (radioButtonSick25p.Checked == true)
+            {
+                red = 0.25;
+            }
+            else
+            {
+                red = 0.5;
+            }
+            if (checkBoxBorn.Checked == true)
+            {
+                ischeckced = true;
+            }
+            if (textBoxNPersons.Text == "")
+            {
 
+            }
+            int[] xy = getSizePictureBox();
+            simulation = new Simulation(N, red, ischeckced, xy[0], xy[1]);
+            PictureBoxGrid.Visible = true;
+            StopButton.Enabled = true;
+            StartButton.Enabled = false;
+            buttonSaveSimulation.Enabled = true;
+            groupBoxInitialization.Enabled = false;
+            StartButton.Enabled = true;
         }
 
-        private void CountsPersons_Click(object sender, EventArgs e)
+        private int[] getSizePictureBox()
         {
-
+            int x = PictureBoxGrid.Size.Width;
+            int y = PictureBoxGrid.Size.Height;
+            return new int[] { x, y };
         }
 
-        private void CountPersonsText_Click(object sender, EventArgs e)
+        private void SaveSimulationToJSON(object sender, EventArgs e)
         {
+            string jsonString = JsonSerializer.Serialize(simulation);
+            File.WriteAllText("data.json", jsonString);
+        }
+        private void LoadSimulationFromJSON(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
 
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+                string jsonString = File.ReadAllText(filePath);
+                simulation = JsonSerializer.Deserialize<Simulation>(jsonString);
+                groupBoxInitialization.Visible = false;
+                PictureBoxGrid.Visible = true;
+                StopButton.Enabled = true;
+                StartButton.Enabled = false;
+                buttonSaveSimulation.Enabled = true;
+                groupBoxInitialization.Enabled = false;
+                StartButton.Enabled = true;
+            }
         }
 
+        private void textBoxNPersons_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked)
+                textBoxNPersons.Enabled = true;
+            else
+                textBoxNPersons.Enabled = false;
+        }
 
+        private void pictureBoxGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point localPoint = PictureBoxGrid.PointToClient(MousePosition);
+            int x = localPoint.X;
+            int y = localPoint.Y;
+            string msg = simulation.CheckMouseCordinateWithPersons(x, y);
+            if (msg != "") {
+                MessageBox.Show(msg, "Osobnik");
+            }
+        }
     }
 }
