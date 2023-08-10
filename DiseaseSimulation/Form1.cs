@@ -25,7 +25,7 @@ namespace DiseaseSimulation
                 int[] XY = simulation.Persons[i].GetCurrentPosition();
                 string cond = simulation.Persons[i].GetDiseaseCondition();
                 SolidBrush color = CheckColor(cond);
-                Rectangle rect = new Rectangle(XY[0], XY[1], 8, 8);
+                Rectangle rect = new Rectangle(XY[0] * 5, XY[1] * 5, 8, 8);
                 pic.FillEllipse(color, rect);
             }
         }
@@ -111,16 +111,29 @@ namespace DiseaseSimulation
             {
                 red = 0.5;
             }
+
+            if(radioBtn100Pops.Checked == true)
+            {
+                N = 100;
+            }
+            else if (radioBtn1000Pops.Checked == true)
+            {
+                N = 1000;
+            }
+            else if (radioBtnNPops.Checked == true)
+            {
+                if (textBoxNPersons.Text != "")
+                {
+                    N = int.Parse(textBoxNPersons.Text);
+                }
+            }
+
             if (checkBoxBorn.Checked == true)
             {
                 ischeckced = true;
             }
-            if (textBoxNPersons.Text == "")
-            {
 
-            }
-            int[] xy = getSizePictureBox();
-            simulation = new Simulation(N, red, ischeckced, xy[0], xy[1]);
+            simulation = new Simulation(N, red, ischeckced, 100, 100);
             PictureBoxGrid.Visible = true;
             StopButton.Enabled = true;
             StartButton.Enabled = false;
@@ -172,7 +185,7 @@ namespace DiseaseSimulation
         }
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
-            if (radioButton1.Checked)
+            if (radioBtnNPops.Checked)
                 textBoxNPersons.Enabled = true;
             else
                 textBoxNPersons.Enabled = false;
@@ -184,7 +197,8 @@ namespace DiseaseSimulation
             int x = localPoint.X;
             int y = localPoint.Y;
             string msg = simulation.CheckMouseCordinateWithPersons(x, y);
-            if (msg != "") {
+            if (msg != "")
+            {
                 MessageBox.Show(msg, "Osobnik");
             }
         }

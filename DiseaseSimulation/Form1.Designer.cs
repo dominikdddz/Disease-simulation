@@ -67,10 +67,10 @@
             checkBoxBorn = new CheckBox();
             groupBoxInitialization = new GroupBox();
             groupBox5 = new GroupBox();
-            radioButton1 = new RadioButton();
+            radioBtnNPops = new RadioButton();
             textBoxNPersons = new TextBox();
-            radioButton2 = new RadioButton();
-            radioButton3 = new RadioButton();
+            radioBtn1000Pops = new RadioButton();
+            radioBtn100Pops = new RadioButton();
             buttonLoadSimulation = new Button();
             buttonCreateSimulation = new Button();
             buttonSaveSimulation = new Button();
@@ -95,7 +95,7 @@
             PictureBoxGrid.Location = new Point(10, 10);
             PictureBoxGrid.Margin = new Padding(3, 2, 3, 2);
             PictureBoxGrid.Name = "PictureBoxGrid";
-            PictureBoxGrid.Size = new Size(516, 516);
+            PictureBoxGrid.Size = new Size(508, 508);
             PictureBoxGrid.TabIndex = 0;
             PictureBoxGrid.TabStop = false;
             PictureBoxGrid.Visible = false;
@@ -508,10 +508,10 @@
             // 
             // groupBox5
             // 
-            groupBox5.Controls.Add(radioButton1);
+            groupBox5.Controls.Add(radioBtnNPops);
             groupBox5.Controls.Add(textBoxNPersons);
-            groupBox5.Controls.Add(radioButton2);
-            groupBox5.Controls.Add(radioButton3);
+            groupBox5.Controls.Add(radioBtn1000Pops);
+            groupBox5.Controls.Add(radioBtn100Pops);
             groupBox5.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
             groupBox5.Location = new Point(13, 93);
             groupBox5.Name = "groupBox5";
@@ -520,16 +520,16 @@
             groupBox5.TabStop = false;
             groupBox5.Text = "Ilość osobników";
             // 
-            // radioButton1
+            // radioBtnNPops
             // 
-            radioButton1.AutoSize = true;
-            radioButton1.Location = new Point(134, 26);
-            radioButton1.Name = "radioButton1";
-            radioButton1.Size = new Size(72, 24);
-            radioButton1.TabIndex = 12;
-            radioButton1.Text = "własna";
-            radioButton1.UseVisualStyleBackColor = true;
-            radioButton1.CheckedChanged += radioButton1_CheckedChanged;
+            radioBtnNPops.AutoSize = true;
+            radioBtnNPops.Location = new Point(134, 26);
+            radioBtnNPops.Name = "radioBtnNPops";
+            radioBtnNPops.Size = new Size(72, 24);
+            radioBtnNPops.TabIndex = 12;
+            radioBtnNPops.Text = "własna";
+            radioBtnNPops.UseVisualStyleBackColor = true;
+            radioBtnNPops.CheckedChanged += radioButton1_CheckedChanged;
             // 
             // textBoxNPersons
             // 
@@ -542,27 +542,27 @@
             textBoxNPersons.TabIndex = 0;
             textBoxNPersons.KeyPress += textBoxNPersons_KeyPress;
             // 
-            // radioButton2
+            // radioBtn1000Pops
             // 
-            radioButton2.AutoSize = true;
-            radioButton2.Location = new Point(69, 26);
-            radioButton2.Name = "radioButton2";
-            radioButton2.Size = new Size(59, 24);
-            radioButton2.TabIndex = 11;
-            radioButton2.Text = "1000";
-            radioButton2.UseVisualStyleBackColor = true;
+            radioBtn1000Pops.AutoSize = true;
+            radioBtn1000Pops.Location = new Point(69, 26);
+            radioBtn1000Pops.Name = "radioBtn1000Pops";
+            radioBtn1000Pops.Size = new Size(59, 24);
+            radioBtn1000Pops.TabIndex = 11;
+            radioBtn1000Pops.Text = "1000";
+            radioBtn1000Pops.UseVisualStyleBackColor = true;
             // 
-            // radioButton3
+            // radioBtn100Pops
             // 
-            radioButton3.AutoSize = true;
-            radioButton3.Checked = true;
-            radioButton3.Location = new Point(12, 26);
-            radioButton3.Name = "radioButton3";
-            radioButton3.Size = new Size(51, 24);
-            radioButton3.TabIndex = 10;
-            radioButton3.TabStop = true;
-            radioButton3.Text = "100";
-            radioButton3.UseVisualStyleBackColor = true;
+            radioBtn100Pops.AutoSize = true;
+            radioBtn100Pops.Checked = true;
+            radioBtn100Pops.Location = new Point(12, 26);
+            radioBtn100Pops.Name = "radioBtn100Pops";
+            radioBtn100Pops.Size = new Size(51, 24);
+            radioBtn100Pops.TabIndex = 10;
+            radioBtn100Pops.TabStop = true;
+            radioBtn100Pops.Text = "100";
+            radioBtn100Pops.UseVisualStyleBackColor = true;
             // 
             // buttonLoadSimulation
             // 
@@ -682,9 +682,9 @@
         private Button buttonLoadSimulation;
         private GroupBox groupBox5;
         private TextBox textBoxNPersons;
-        private RadioButton radioButton1;
-        private RadioButton radioButton2;
-        private RadioButton radioButton3;
+        private RadioButton radioBtnNPops;
+        private RadioButton radioBtn1000Pops;
+        private RadioButton radioBtn100Pops;
         private Button buttonSaveSimulation;
         private Button buttonRestartSimulation;
     }
