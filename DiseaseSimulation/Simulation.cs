@@ -17,6 +17,7 @@ namespace DiseaseSimulation
         public int deadPersonsCount = 0;    // ilosc zmarlych osobników
         public int deadCountByAge = 0;      // ilosc zmarlych osobników przez wiek
         public int deadCountByDisease = 0;  // ilosc zmarlych osobników przez chorobe
+        public int[,] simulationData = new int[1000, 7];
         public double birthProbability = 0.2; // szansa na urodzenie nowego osobnika podczas spotkania
         private bool isBorn = true;
         private int x;
@@ -70,8 +71,22 @@ namespace DiseaseSimulation
                 IsDead(i);                      // sprawdza czy osobnik umarl
             }
             ClearMeeting();       // resetuje wszystkie spotkania
+            saveTurnToData();
             turnCount++;
         }
+
+        private void saveTurnToData()
+        {
+            int T = turnCount-1;
+            simulationData[T, 0] = N;
+            simulationData[T, 1] = greenPersonsCount;
+            simulationData[T, 2] = orangePersonsCount;
+            simulationData[T, 3] = yellowPersonsCount;
+            simulationData[T, 4] = redPersonsCount;
+            simulationData[T, 5] = birthPersonsCount;
+            simulationData[T, 6] = deadPersonsCount;
+        }
+
         private void ConditionCount(int i)  // Zlicza ilosc stanow wsrod osobnikow podczas inicjalizacji symulacji
         {
             string c = Persons[i].GetDiseaseCondition();

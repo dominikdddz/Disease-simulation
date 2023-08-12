@@ -85,7 +85,6 @@
             // 
             // SimulationTimerClock
             // 
-            SimulationTimerClock.Interval = 200;
             SimulationTimerClock.Tick += SimulationTimerTurn;
             // 
             // PictureBoxGrid
@@ -572,7 +571,6 @@
             buttonLoadSimulation.TabIndex = 12;
             buttonLoadSimulation.Text = "Wczytaj symulacje";
             buttonLoadSimulation.UseVisualStyleBackColor = true;
-            buttonLoadSimulation.Click += LoadSimulationFromJSON;
             // 
             // buttonCreateSimulation
             // 
@@ -592,9 +590,9 @@
             buttonSaveSimulation.Name = "buttonSaveSimulation";
             buttonSaveSimulation.Size = new Size(109, 57);
             buttonSaveSimulation.TabIndex = 13;
-            buttonSaveSimulation.Text = "Zapisz symulacje";
+            buttonSaveSimulation.Text = "Eksportuj dane";
             buttonSaveSimulation.UseVisualStyleBackColor = true;
-            buttonSaveSimulation.Click += SaveSimulationToJSON;
+            buttonSaveSimulation.Click += ExportSimulationToCSV;
             // 
             // buttonRestartSimulation
             // 
@@ -606,6 +604,7 @@
             buttonRestartSimulation.TabIndex = 14;
             buttonRestartSimulation.Text = "Restart symulacji";
             buttonRestartSimulation.UseVisualStyleBackColor = true;
+            buttonRestartSimulation.Click += RestartSimulation;
             // 
             // Form1
             // 

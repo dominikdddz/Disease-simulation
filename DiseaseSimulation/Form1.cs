@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 
 namespace DiseaseSimulation
@@ -79,6 +80,7 @@ namespace DiseaseSimulation
                 SimulationTimerClock.Stop();
                 StopButton.Enabled = false;
                 StartButton.Enabled = false;
+                buttonRestartSimulation.Enabled = true;
             }
         }
         private void StartSimulationButton(object sender, EventArgs e)
@@ -86,16 +88,19 @@ namespace DiseaseSimulation
             SimulationTimerClock.Start();
             StopButton.Enabled = true;
             StartButton.Enabled = false;
+            buttonRestartSimulation.Enabled = false;
         }
         private void PauseSimulationButton(object sender, EventArgs e)
         {
             SimulationTimerClock.Stop();
             StopButton.Enabled = false;
             StartButton.Enabled = true;
+            buttonRestartSimulation.Enabled = true;
         }
 
         private void initializationSimulation()
         {
+
             double red = 0;
             int N = 100;
             bool ischeckced = false;
@@ -112,7 +117,7 @@ namespace DiseaseSimulation
                 red = 0.5;
             }
 
-            if(radioBtn100Pops.Checked == true)
+            if (radioBtn100Pops.Checked == true)
             {
                 N = 100;
             }
@@ -142,40 +147,6 @@ namespace DiseaseSimulation
             StartButton.Enabled = true;
         }
 
-        private int[] getSizePictureBox()
-        {
-            int x = PictureBoxGrid.Size.Width;
-            int y = PictureBoxGrid.Size.Height;
-            return new int[] { x, y };
-        }
-
-        private void SaveSimulationToJSON(object sender, EventArgs e)
-        {
-            string jsonString = JsonSerializer.Serialize(simulation);
-            File.WriteAllText("data.json", jsonString);
-        }
-        private void LoadSimulationFromJSON(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                string filePath = openFileDialog.FileName;
-                string jsonString = File.ReadAllText(filePath);
-                simulation = JsonSerializer.Deserialize<Simulation>(jsonString);
-                groupBoxInitialization.Visible = false;
-                PictureBoxGrid.Visible = true;
-                StopButton.Enabled = true;
-                StartButton.Enabled = false;
-                buttonSaveSimulation.Enabled = true;
-                groupBoxInitialization.Enabled = false;
-                StartButton.Enabled = true;
-            }
-        }
-
         private void textBoxNPersons_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
@@ -200,6 +171,26 @@ namespace DiseaseSimulation
             if (msg != "")
             {
                 MessageBox.Show(msg, "Osobnik");
+            }
+        }
+        private void RestartSimulation(object sender, EventArgs e)
+        {
+            initializationSimulation();
+        }
+
+        private void ExportSimulationToCSV(object sender, EventArgs e)
+        {
+            using (StreamWriter file = new StreamWriter("simulation.csv"))
+            {
+                for (int i = 0; i < simulation.turnCount; i++)
+                {
+                    List<string> values = new List<string>();
+                    for (int j = 0; j < simulation.simulationData.GetLength(1); j++)
+                    {
+                        values.Add(simulation.simulationData[i, j].ToString());
+                    }
+                    file.WriteLine(string.Join(",", values));
+                }
             }
         }
     }
