@@ -71,7 +71,6 @@
             textBoxNPersons = new TextBox();
             radioBtn1000Pops = new RadioButton();
             radioBtn100Pops = new RadioButton();
-            buttonLoadSimulation = new Button();
             buttonCreateSimulation = new Button();
             buttonSaveSimulation = new Button();
             buttonRestartSimulation = new Button();
@@ -493,7 +492,6 @@
             // groupBoxInitialization
             // 
             groupBoxInitialization.Controls.Add(groupBox5);
-            groupBoxInitialization.Controls.Add(buttonLoadSimulation);
             groupBoxInitialization.Controls.Add(groupBox2);
             groupBoxInitialization.Controls.Add(groupBox3);
             groupBoxInitialization.Controls.Add(buttonCreateSimulation);
@@ -563,22 +561,13 @@
             radioBtn100Pops.Text = "100";
             radioBtn100Pops.UseVisualStyleBackColor = true;
             // 
-            // buttonLoadSimulation
-            // 
-            buttonLoadSimulation.Location = new Point(186, 268);
-            buttonLoadSimulation.Name = "buttonLoadSimulation";
-            buttonLoadSimulation.Size = new Size(109, 57);
-            buttonLoadSimulation.TabIndex = 12;
-            buttonLoadSimulation.Text = "Wczytaj symulacje";
-            buttonLoadSimulation.UseVisualStyleBackColor = true;
-            // 
             // buttonCreateSimulation
             // 
-            buttonCreateSimulation.Location = new Point(48, 268);
+            buttonCreateSimulation.Location = new Point(117, 268);
             buttonCreateSimulation.Name = "buttonCreateSimulation";
             buttonCreateSimulation.Size = new Size(111, 57);
             buttonCreateSimulation.TabIndex = 11;
-            buttonCreateSimulation.Text = "Nowa symulacja";
+            buttonCreateSimulation.Text = "Stwórz symulacje";
             buttonCreateSimulation.UseVisualStyleBackColor = true;
             buttonCreateSimulation.Click += buttonNewSimulation_Click;
             // 
@@ -678,7 +667,6 @@
         private CheckBox checkBoxBorn;
         private GroupBox groupBoxInitialization;
         private Button buttonCreateSimulation;
-        private Button buttonLoadSimulation;
         private GroupBox groupBox5;
         private TextBox textBoxNPersons;
         private RadioButton radioBtnNPops;
