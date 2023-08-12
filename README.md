@@ -5,7 +5,7 @@ Each person has a health level that changes during each turn, a high enough heal
 
 ## Sample illustration and graph
 Program during simulation create
-![Simulation GIF](/simulation.gif?raw=true "Simulation GIF")
+![Simulation UI](/UI.png?raw=true "Simulation UI")
 An example of a disease simulation
 ![Simulation GIF](/simulation.gif?raw=true "Simulation GIF")
 An example of plot data generate from csv file after end simulation
